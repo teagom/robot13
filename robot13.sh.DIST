@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# O objetivo desse script é executar outros scripts de backup em serie com
+# apenas um arquivo log.
+
+SECTION="robot13-core"
+
+# destino do backup , caminho da raiz.
+# local com espaço em disco suficiente para backup, temporary.
+DESTINATION="/tmp/robot13/backup"
+
+# formato do diretorio define, sobrepor ou infinito backups.
+# voce pode personalizar o formato, como achar melhor, veja opções em:
+# $ date --help
+
+# Esse formato é infinito, não sobreescreve.
+FORMAT="$(date +%F_%Hh%M)" # 2022-12-30_16h20
+
+# Esse formato sobreescreve em 7 dias, retenção de 7 dias.
+# dias da semana, Sunday to Saturday
+# FORMAT=$(date +%A) # dia da semana
+
+# formato ANO + dia da semana # 2023-terça
+# FORMAT="$(date +%Y-%A)"
+
+# local com espaço em disco suficiente para backup, temporary
+# BACKUP : /tmp/robot13/backup/2022-12-29_16h20
+BACKUP="$DESTINATION/$FORMAT"
+
+# pode receber de outro script via parametro
+# $ robot13.sh <caminho-para-backup> de outro script
+if [ ! -z "$1" ]
+    then
+          BACKUP=$1
+          echo "  Importado BACKUP: $BACKUP"
+    fi
+mkdir -p $BACKUP
+
+# gerar logs de saida
+LOGDIR="$DESTINATION/var/log/robot13"
+LOGFILE='robot13'
+LOGSUC='log'
+LOGERR='err'
+mkdir -p $LOGDIR
+
+
+# main code
+(
+    # header
+    source header.sh
+
+    # scripts
+    /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
+
+    # resume
+    SIZE=$(du -sh $DESTINATION)
+    source resume.sh
+
+) 2>"$LOGDIR/$LOGFILE.$LOGERR" 1>"$LOGDIR/$LOGFILE.$LOGSUC"

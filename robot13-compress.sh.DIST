@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# O objetivo desse script é compactar todos os caminhos e arquivos declarados
+# no array COMPRESS.
+
+SECTION='compress'
+
+# zip e parametros
+ZIP='zip -9r'
+ZIPTEST='zip -T'
+EXT='zip'
+
+# Compactar todos os caminhos e arquivos declarados no array abaixo,
+# separados por um espaço.
+#COMPRESS=(path0 <space> path1 <space> pathN)
+COMPRESS=('/etc/apache2' '/etc/ssmtp' '/home/user/Documents' '/opt/zimbra/conf')
+
+
+# # # # # # # # # # # # # # # # # # # # # # #
+# main code
+# # # # # # # # # # # # # # # # # # # # # # #
+
+# recebe BACKUP via parametro?
+# robot13-compress.sh $BACKUP
+if [ ! -z "$1" ]
+    then
+          DESTINATION="$1"
+    else
+          echo "!Erro: Caminho de destino é obrigatorio. '\$BACKUP'"
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          FORMAT="$2"
+    else
+          echo "!Erro: Formato é obrigatorio. '\$FORMAT'"
+          exit 0
+    fi
+
+# caminho final para arquivos
+# BACKUP : /tmp/robot13/backup/2022-12-31_16h20/compress
+BACKUP="$1/$2/$SECTION"
+mkdir -p $BACKUP
+
+source header.sh
+
+# compactar separadamente cada objecto declarado no array
+for OBJ in ${COMPRESS[*]}
+    do
+        # converte / em - para filename
+        # OBJ = /etc/smtp
+        # F   = _etc_smtp
+        F=$(echo $OBJ | sed 's/\//_/g')
+        # FILE : /tmp/robot13/backup/2022-12-31_16h20/compress/_etc_ssmtp.zip
+        FILE="$BACKUP/$F.$EXT"
+
+        # compress
+        CMD="$ZIP $FILE $OBJ"
+        echo
+        echo "  Compress :::::::::::::::::::::::::::::::::::::::::"
+        echo "  Object   : $OBJ"
+        echo "  Output   : $FILE"
+        echo
+        echo "  CMD      : $CMD"
+        $CMD
+
+        # test zip
+        CMD="$ZIPTEST $FILE"
+        echo
+        echo "  Test    : $CMD"
+        $CMD
+    done
+echo
+
+# resume
+SIZE=$(du -sh $OUTPUT)
+FINISH=$(date)
+source resume.sh
