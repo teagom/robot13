@@ -51,6 +51,7 @@ mkdir -p $LOGDIR
 
     # scripts
     /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
+    /usr/bin/bash robot13-rsync.sh $DESTINATION $FORMAT
 
     # resume
     SIZE=$(du -sh $DESTINATION)

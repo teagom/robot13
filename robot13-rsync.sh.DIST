@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# O objetivo desse script é enviar o backup para outro servidor usando conexao,
+# conta e uma chave autorizada SSH.
+# https://www.ssh.com/academy/ssh/authorized-keys-openssh
+
+# section
+SECTION="Rsync"  # this section
+
+# DESTINATION and FORMAT are reserved!
+
+# settings remote server
+USER="my-username"         # username with authorized-keys ssh
+SERVER="my-server.com"     # hostname or IP
+SERVER_DEST="/home/my-username/robot13/backup"  # destination in remote server
+# mkdir destination folder at remote server: robot13/backup
+
+# rsync
+RSYNC="/usr/bin/rsync"
+# options : https://linux.die.net/man/1/rsync
+PARAM="-arv --inplace --progress --partial"
+PORT="-e 'ssh -p 22'"
+
+# recebe DESTINATION e FORMAT via parametro
+if [ ! -z "$1" ]
+    then
+          DESTINATION="$1"
+    else
+          echo "!Erro: Caminho de destino é obrigatorio. '\$BACKUP'"
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          FORMAT="$2"
+    else
+          echo "!Erro: Formato é obrigatorio. '\$FORMAT'"
+          exit 0
+    fi
+
+# from command line : DESTINATION , FORMAT
+BACKUP="$1/$2"
+
+# rewrite to remote server
+DESTINATION="$USER@$SERVER:$SERVER_DEST/."
+
+source header.sh
+CMD="$RSYNC $PARAM $PORT $BACKUP $USER@$SERVER:$SERVER_DEST/."
+echo
+echo "  User       : $USER"
+echo "  Server     : $SERVER"
+echo "  Source     : $BACKUP"
+echo "  CMD        : $CMD"
+
+# executa linha de comando
+eval $CMD
+
+# resume
+source resume.sh
