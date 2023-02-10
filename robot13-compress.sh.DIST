@@ -3,9 +3,15 @@
 # O objetivo desse script é compactar todos os caminhos e arquivos declarados
 # no array COMPRESS.
 
+# : : : : : : : : : : : : : : : : : : : : : :
+# variaveis de ambiente
+
+# section
 SECTION='compress'
 
-# zip e parametros
+# DESTINATION and FORMAT are reserved!
+
+# zip and parameters
 ZIP='zip -9r'
 ZIPTEST='zip -T'
 EXT='zip'
@@ -16,9 +22,8 @@ EXT='zip'
 COMPRESS=('/etc/apache2' '/etc/ssmtp' '/home/user/Documents' '/opt/zimbra/conf')
 
 
-# # # # # # # # # # # # # # # # # # # # # # #
+# : : : : : : : : : : : : : : : : : : : : : :
 # main code
-# # # # # # # # # # # # # # # # # # # # # # #
 
 # $DESTINATION and $FORMAT from command line
 if [ ! -z "$1" ]
@@ -42,6 +47,7 @@ if [ ! -z "$2" ]
 BACKUP="$1/$2/$SECTION"
 mkdir -p $BACKUP
 
+# header
 source header.sh
 
 # compactar separadamente cada objecto declarado no array

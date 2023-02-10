@@ -13,10 +13,10 @@ DESTINATION="/tmp/robot13/backup"
 # voce pode personalizar o formato, como achar melhor, veja opções em:
 # $ date --help
 
-# Esse formato é infinito, não sobreescreve.
+# Esse formato é infinito, não sobrescreve.
 FORMAT="$(date +%F_%Hh%M)" # 2022-12-30_16h20
 
-# Esse formato sobreescreve em 7 dias, retenção de 7 dias.
+# Esse formato sobrescreve em 7 dias, retenção de 7 dias.
 # dias da semana, Sunday to Saturday
 # FORMAT=$(date +%A) # dia da semana
 
