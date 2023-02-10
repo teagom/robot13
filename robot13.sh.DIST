@@ -26,14 +26,6 @@ FORMAT="$(date +%F_%Hh%M)" # 2022-12-30_16h20
 # local com espaço em disco suficiente para backup, temporary
 # BACKUP : /tmp/robot13/backup/2022-12-29_16h20
 BACKUP="$DESTINATION/$FORMAT"
-
-# pode receber de outro script via parametro
-# $ robot13.sh <caminho-para-backup> de outro script
-if [ ! -z "$1" ]
-    then
-          BACKUP=$1
-          echo "  Importado BACKUP: $BACKUP"
-    fi
 mkdir -p $BACKUP
 
 # gerar logs de saida
@@ -51,6 +43,10 @@ mkdir -p $LOGDIR
 
     # scripts
     /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
+    /usr/bin/bash robot13-zimbra-all-mailbox.sh.DIST $DESTINATION $FORMAT
+
+    # last:
+    # rsync the backup to remote server
     /usr/bin/bash robot13-rsync.sh $DESTINATION $FORMAT
 
     # resume
