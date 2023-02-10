@@ -43,7 +43,7 @@ mkdir -p $LOGDIR
 
     # scripts
     /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
-    /usr/bin/bash robot13-zimbra-all-mailbox.sh.DIST $DESTINATION $FORMAT
+    /usr/bin/bash robot13-zimbra-all-mailbox.sh $DESTINATION $FORMAT
 
     # last:
     # rsync the backup to remote server
