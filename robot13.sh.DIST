@@ -31,8 +31,9 @@ mkdir -p $BACKUP
 # gerar logs de saida
 LOGDIR="$DESTINATION/var/log/robot13"
 LOGFILE='robot13'
-LOGSUC='log'
-LOGERR='err'
+LOGSUC="$LOGDIR/$LOGFILE.log"
+LOGERR="$LOGDIR/$LOGFILE.err"
+
 mkdir -p $LOGDIR
 
 
@@ -45,12 +46,14 @@ mkdir -p $LOGDIR
     /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
     /usr/bin/bash robot13-zimbra-all-mailbox.sh $DESTINATION $FORMAT
 
-    # last:
     # rsync the backup to remote server
     /usr/bin/bash robot13-rsync.sh $DESTINATION $FORMAT
+
+    # report
+    /usr/bin/bash robot13-report-log.sh "$LOGDIR/$LOGFILE.$LOGSUC" "$LOGDIR/$LOGFILE.$LOGERR"
 
     # resume
     SIZE=$(du -sh $DESTINATION)
     source resume.sh
 
-) 2>"$LOGDIR/$LOGFILE.$LOGERR" 1>"$LOGDIR/$LOGFILE.$LOGSUC"
+) 2>"$LOGERR" 1>"$LOGSUC"
