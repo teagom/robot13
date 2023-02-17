@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# O objetivo desse script é verificar se existe erro no arquivo log e reportar
+# a pessoa responsável.
+
+# O comando mail é do pacote mailutils. Voce pode usar o serviço ssmtp para configurar
+# um smtp, https://wiki.debian.org/sSMTP
+
+# : : : : : : : : : : : : : : : : : : : : : :
+# variaveis de ambiente
+
+# section
+SECTION="report-log"
+
+# mta
+MTA="sendmail"  # sendmail OR mail
+
+# path to binary
+MAIL="/usr/sbin/sendmail"
+SENDMAIL="/usr/sbin/sendmail"
+
+MAILFROM="report@domain.com"
+MAILSUBJ="Robot13 Report Backup Log"
+MAILTO="mail0@domain.com, mail1@domain.com, mailN@domain.com"
+
+# : : : : : : : : : : : : : : : : : : : : : :
+# main code
+
+# recebe DESTINATION e FORMAT via parametro
+if [ ! -z "$1" ]
+    then
+          LOGSUC="$1"
+    else
+          echo "!Erro: Log success é obrigatorio."
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          LOGERR="$2"
+    else
+          echo "!Erro: Log error é obrigatorio."
+          exit 0
+    fi
+
+# header
+source header.sh
+
+echo
+echo "  User       : $USER"
+echo "  Server     : $SERVER"
+echo "  Source     : $BACKUP"
+echo "  CMD        : $CMD"
+
+# success
+echo "  Send report..."
+
+
+if [ "$MTA" == 'sendmail' ]
+ then
+    S="$MAILSUBJ - Sucess"
+    echo -e "subject:$S\nto:$MAILTO\n(`more $LOGSUC`)" | $SENDMAIL -t -f $MAILFROM
+
+    S="$MAILSUBJ - Error"
+    echo -e "subject:$S\nto:$MAILTO\n(`more $LOGERR`)" | $SENDMAIL -t -f $MAILFROM
+fi
+
+
+if [ "$MTA" == 'mail' ]
+ then
+    echo "  Success"
+    S="$MAILSUBJ - Sucess"
+    $MAIL -v -s "$S" $MAILTO < $LOGSUC
+
+    echo "  Error"
+    S="$MAILSUBJ - Error"
+    $MAIL -v -s "$S" $MAILTO < $LOGERR
+fi
+
+# resume
+source resume.sh
