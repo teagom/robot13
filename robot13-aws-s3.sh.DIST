@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# O objetivo desse script é copiar ou sincronizar todo o conteúdo do backup para
+# um aws s3 bucket.
+# https://aws.amazon.com/s3/
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+# https://docs.aws.amazon.com/cli/latest/reference/s3/
+
+# : : : : : : : : : : : : : : : : : : : : : :
+# variaveis de ambiente
+
+# section
+SECTION='AWS-S3'
+
+# AWS Cli
+AWS="/usr/local/bin/aws"
+AWS_PARAM="s3 cp --recursive"
+
+BUCKET="s3://my-bucket-name"    # s3 bucket name
+BUCKET_DEST="/backup"           # path in bucket
+
+
+# : : : : : : : : : : : : : : : : : : : : : :
+# main code
+
+# recebe DESTINATION e FORMAT via parametro
+if [ ! -z "$1" ]
+    then
+          DESTINATION="$1"
+    else
+          echo "!Erro: O caminho do backup é obrigatorio. '\$BACKUP'"
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          FORMAT="$2"
+    else
+          echo "!Erro: Formato é obrigatorio. '\$FORMAT'"
+          exit 0
+    fi
+
+# from command line : DESTINATION , FORMAT
+BACKUP="$1/$2"
+
+# rewrite to remote server
+DESTINATION="$BUCKET$BUCKET_DEST"
+
+# header
+source header.sh
+
+CMD="$AWS $AWS_PARM $BACKUP $DESTINATION"
+echo
+echo "  Bucket     : $DESTINATION"
+echo "  Backup     : $BACKUP"
+echo "  CMD        : $CMD"
+
+# run line command
+eval $CMD
+
+# resume
+source resume.sh
