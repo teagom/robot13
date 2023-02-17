@@ -16,12 +16,12 @@ SECTION="report-log"
 MTA="sendmail"  # sendmail OR mail
 
 # path to binary
-MAIL="/usr/sbin/sendmail"
+MAIL="/usr/sbin/mail"
 SENDMAIL="/usr/sbin/sendmail"
 
 MAILFROM="report@domain.com"
-MAILSUBJ="Robot13 Report Backup Log"
 MAILTO="mail0@domain.com, mail1@domain.com, mailN@domain.com"
+MAILSUBJ="Robot13 Report Backup Log"
 
 # : : : : : : : : : : : : : : : : : : : : : :
 # main code
@@ -53,26 +53,31 @@ echo "  Source     : $BACKUP"
 echo "  CMD        : $CMD"
 
 # success
-echo "  Send report..."
+echo
+echo "  = Send report..."
+echo "  Success    : $LOGSUC"
+echo "  Error      : $LOGERR"
 
 
 if [ "$MTA" == 'sendmail' ]
  then
     S="$MAILSUBJ - Sucess"
+    echo "  SendMail success!"
     echo -e "subject:$S\nto:$MAILTO\n(`more $LOGSUC`)" | $SENDMAIL -t -f $MAILFROM
 
     S="$MAILSUBJ - Error"
+    echo "  SendMail error!"
     echo -e "subject:$S\nto:$MAILTO\n(`more $LOGERR`)" | $SENDMAIL -t -f $MAILFROM
 fi
 
 
 if [ "$MTA" == 'mail' ]
  then
-    echo "  Success"
+    echo "  Mail success!"
     S="$MAILSUBJ - Sucess"
     $MAIL -v -s "$S" $MAILTO < $LOGSUC
 
-    echo "  Error"
+    echo "  Mail error!"
     S="$MAILSUBJ - Error"
     $MAIL -v -s "$S" $MAILTO < $LOGERR
 fi
