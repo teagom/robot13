@@ -33,7 +33,7 @@ if [ ! -z "$1" ]
     then
           DESTINATION="$1"
     else
-          echo "!Erro: Caminho de destino é obrigatorio. '\$BACKUP'"
+          echo "!Erro: O Caminho de destino é obrigatorio. '\$BACKUP'"
           exit 0
     fi
 
