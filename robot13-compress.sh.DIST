@@ -1,36 +1,14 @@
 #!/bin/bash
 
 # O objetivo desse script é compactar todos os caminhos e arquivos declarados
-# no array COMPRESS.
+# no array OBJECTS.
 
-# : : : : : : : : : : : : : : : : : : : : : :
-# variaveis de ambiente
-
-# section
-SECTION='compress'
-
-# DESTINATION and FORMAT are reserved!
-
-# zip and parameters
-ZIP='zip -9r'
-ZIPTEST='zip -T'
-EXT='zip'
-
-# Compactar todos os caminhos e arquivos declarados no array abaixo,
-# separados por um espaço.
-#COMPRESS=(path0 <space> path1 <space> pathN)
-COMPRESS=('/etc/apache2' '/etc/ssmtp' '/home/user/Documents' '/opt/zimbra/conf')
-
-
-# : : : : : : : : : : : : : : : : : : : : : :
-# main code
-
-# $DESTINATION and $FORMAT from command line
+# $DESTINATION e $FORMAT via paramentro via linha de comando
 if [ ! -z "$1" ]
     then
           DESTINATION="$1"
     else
-          echo "!Erro: Caminho de destino é obrigatorio. '\$BACKUP'"
+          echo "!Erro: Caminho de destino é obrigatorio. '\$DESTINATION'"
           exit 0
     fi
 
@@ -42,41 +20,62 @@ if [ ! -z "$2" ]
           exit 0
     fi
 
-# caminho final para arquivos
-# BACKUP : /tmp/robot13/backup/2022-12-31_16h20/compress
-BACKUP="$1/$2/$SECTION"
-mkdir -p $BACKUP
+# start date time
+START=$(date)
 
-# header
+# section
+SECTION='compress'
+
+# Compactar todos os caminhos e arquivos declarados no array abaixo,
+# separados por um espaço.
+OBJECTS=('/etc/apache2' '/etc/ssmtp' '/etc/samba')
+
+# compress and parameters
+COMP='tar -czf'
+COMPTEST='tar ztvf'
+COMPEXT='tar.gz'
+
+# definir o format do backup
+
+# formato 1
+BACKUP="$DESTINATION/$SECTION/$FORMAT"
+# BACKUP : DESTINATION SECTION FORMAT
+#          /media/external-hd/backup /compress /2022-12-28_16h20
+
+# formato 2
+# BACKUP="$DESTINATION/$FORMAT/$SECTION"
+#          DESTINATION FORMAT SECTION
+#          /media/external-hd/backup /2022-12-29_16h20 /compress
+
+# # # main code
 source header.sh
+source log.sh $DESTINATION $SECTION
+
+CMD="mkdir -p $BACKUP"
+source cmd.sh
 
 # compactar separadamente cada objecto declarado no array
-for OBJ in ${COMPRESS[*]}
+for ORIGIN in ${OBJECTS[*]}
     do
-        # converte / em - para filename
+        # converte / em _ para filename
         # OBJ = /etc/smtp
         # F   = _etc_smtp
-        F=$(echo $OBJ | sed 's/\//_/g')
-        # FILE : /tmp/robot13/backup/2022-12-31_16h20/compress/_etc_ssmtp.zip
-        FILE="$BACKUP/$F.$EXT"
+        F=$(echo $ORIGIN | sed 's/\//_/g')
+        FILE="$BACKUP/$F.$COMPEXT"
+
+        # header
+        source header.sh
 
         # compress
-        CMD="$ZIP $FILE $OBJ"
-        echo
-        echo "  Compress :::::::::::::::::::::::::::::::::::::::::"
-        echo "  Object   : $OBJ"
-        echo "  Output   : $FILE"
-        echo
-        echo "  CMD      : $CMD"
-        $CMD
+        CMD="$COMP $FILE $ORIGIN"
+        source cmd.sh
 
-        # test zip
-        CMD="$ZIPTEST $FILE"
+        # resume
+        source resume.sh
+
         echo
-        echo "  Test    : $CMD"
-        $CMD
+        echo "  To Check integrity"
+        CMD="$COMPTEST $FILE"
+        source cmd.sh
     done
 echo
-
-# resume
-source resume.sh

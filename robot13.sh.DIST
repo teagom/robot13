@@ -1,5 +1,7 @@
 #!/bin/bash
 
+START=$(date)
+
 # O objetivo desse script é executar outros scripts de backup em serie com
 # apenas um arquivo log.
 
@@ -7,53 +9,39 @@ SECTION="robot13-core"
 
 # destino do backup , caminho da raiz.
 # local com espaço em disco suficiente para backup, temporary.
-DESTINATION="/tmp/robot13/backup"
+DESTINATION="/media/external-hd/backup"
 
 # formato do diretorio define, sobrepor ou infinito backups.
 # voce pode personalizar o formato, como achar melhor, veja opções em:
 # $ date --help
 
 # Esse formato é infinito, não sobrescreve.
-FORMAT="$(date +%F_%Hh%M)" # 2022-12-30_16h20
+# 2022-12-30_16h20
+FORMAT="$(date +%F_%Hh%M)"
 
 # Esse formato sobrescreve em 7 dias, retenção de 7 dias.
-# dias da semana, Sunday to Saturday
+# dias da semana, de segunda a domingo
 # FORMAT=$(date +%A) # dia da semana
 
-# formato ANO + dia da semana # 2023-terça
+# formato ANO + dia da semana
+# 2023-domingo
 # FORMAT="$(date +%Y-%A)"
 
-# local com espaço em disco suficiente para backup, temporary
-# BACKUP : /tmp/robot13/backup/2022-12-29_16h20
-BACKUP="$DESTINATION/$FORMAT"
-mkdir -p $BACKUP
+# # # main code
+# header
+source header.sh
 
-# gerar logs de saida
-LOGDIR="$DESTINATION/var/log/robot13"
-LOGFILE='robot13'
-LOGSUC="$LOGDIR/$LOGFILE.log"
-LOGERR="$LOGDIR/$LOGFILE.err"
+# compress
+source log.sh $DESTINATION 'compress'
+/usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT 1>$LOGSUC 2>$LOGERR
+source robot13-report-log.sh $LOGSUC $LOGERR
 
-mkdir -p $LOGDIR
+# backup onedrive
+source log.sh $DESTINATION 'onedrive'
+/usr/bin/bash robot13-onedrive.sh $DESTINATION $FORMAT 1>$LOGSUC 2>$LOGERR
+source robot13-report-log.sh $LOGSUC $LOGERR
 
-
-# main code
-(
-    # header
-    source header.sh
-
-    # scripts
-    /usr/bin/bash robot13-compress.sh $DESTINATION $FORMAT
-    /usr/bin/bash robot13-zimbra-all-mailbox.sh $DESTINATION $FORMAT
-
-    # rsync the backup to remote server
-    /usr/bin/bash robot13-rsync.sh $DESTINATION $FORMAT
-
-    # report
-    /usr/bin/bash robot13-report-log.sh "$LOGDIR/$LOGFILE.$LOGSUC" "$LOGDIR/$LOGFILE.$LOGERR"
-
-    # resume
-    SIZE=$(du -sh $DESTINATION)
-    source resume.sh
-
-) 2>"$LOGERR" 1>"$LOGSUC"
+# sync the backup to remote server
+source log.sh $DESTINATION 'sync-to-aws-s3'
+/usr/bin/bash robot13-sync-to-aws-s3.sh $DESTINATION $FORMAT 1>$LOGSUC 2>$LOGERR
+source robot13-report-log.sh $LOGSUC $LOGERR
