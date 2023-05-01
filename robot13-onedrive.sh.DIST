@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# O objetivo desse script é copiar ou sincronizar todo o conteúdo do onedrive
+# para a maquina local.
+
+# do    OneDrive
+# para  maquina local, /media/external-hd/onedrive
+
+# $DESTINATION e $FORMAT via paramentro via linha de comando
+if [ ! -z "$1" ]
+    then
+          DESTINATION="$1"
+    else
+          echo "!Erro: Caminho de destino é obrigatorio. '\$DESTINATION'"
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          FORMAT="$2"
+    else
+          echo "!Erro: Formato é obrigatorio. '\$FORMAT'"
+          exit 0
+    fi
+
+START=$(date)
+
+# section
+SECTION='onedrive'
+
+# sync from onedrive to localhost
+# https://rclone.org/flags/
+# https://rclone.org/docs/#log-level-level
+BIN="/usr/bin/rclone"
+PARAM="--retries 5 -v sync"
+ORIGIN="my-drive-name-onedrive:"  # rclone-drive-name: , use : no final
+
+# definir o format do backup
+
+# formato 1
+BACKUP="$DESTINATION/$SECTION/$FORMAT"
+# BACKUP : DESTINATION SECTION FORMAT
+#          /media/external-hd/backup /onedrive  /2022-12-28_16h20
+
+# formato 2
+# BACKUP="$DESTINATION/$FORMAT/$SECTION"
+#          DESTINATION FORMAT SECTION
+#          /media/external-hd/backup /2022-12-29_16h20 /onedrive
+
+# header
+source header.sh
+
+CMD="mkdir -p $BACKUP"
+source cmd.sh
+
+CMD="$BIN $PARAM $ORIGIN $BACKUP"
+source cmd.sh
+
+# resume
+source resume.sh

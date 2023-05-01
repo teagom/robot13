@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# O objetivo desse script é copiar ou sincronizar todo o conteúdo da origem para
+# um aws s3 bucket.
+
+# https://aws.amazon.com/s3/
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+# https://docs.aws.amazon.com/cli/latest/reference/s3/
+
+# $DESTINATION e $FORMAT via paramentro via linha de comando
+if [ ! -z "$1" ]
+    then
+          DESTINATION="$1"
+    else
+          echo "!Erro: Caminho de destino é obrigatorio. '\$DESTINATION'"
+          exit 0
+    fi
+
+if [ ! -z "$2" ]
+    then
+          FORMAT="$2"
+    else
+          echo "!Erro: Formato é obrigatorio. '\$FORMAT'"
+          exit 0
+    fi
+
+START=$(date)
+
+# section
+SECTION='Sync-to-AWS-S3'
+
+# array of paths a space between paths
+OBJECTS=("/media/external-hd/compress/$FORMAT" "/other/path" "/media/external-hd/onedrive/$FORMAT" "/media/external-hd/log")
+
+# AWS Cli
+BIN="/usr/local/bin/aws"
+PARAM="s3 sync --storage-class STANDARD_IA"
+DESTINATION="s3://asws-s3-bucket-name-backup"
+
+# sync cada objecto declarado no array
+for ORIGIN in ${OBJECTS[*]}
+    do
+        BACKUP=$ORIGIN
+
+        # header
+        source header.sh
+
+        CMD="$BIN $PARAM $ORIGIN $DESTINATION$ORIGIN"
+        source cmd.sh
+
+        # resume
+        source resume.sh
+    done
+echo
